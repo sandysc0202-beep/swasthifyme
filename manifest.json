@@ -1,14 +1,14 @@
 {
   "name": "SwasthifyMe",
   "short_name": "SwasthifyMe",
-  "description": "Indian diet, macro, water and weight tracker with Marathi food names. Works offline.",
+  "description": "Indian diet, macro, water and weight tracker in English and Hindi. Works offline.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#f3f6f1",
-  "theme_color": "#0b8a5c",
+  "background_color": "#f4f7f2",
+  "theme_color": "#0a7a52",
   "lang": "en-IN",
   "categories": ["health", "food", "lifestyle"],
   "icons": [
@@ -18,7 +18,7 @@
     { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Log food", "url": "./#foods", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Log food", "url": "./#log", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
     { "name": "Trends", "url": "./#trends", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

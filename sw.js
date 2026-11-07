@@ -1,10 +1,11 @@
 /* SwasthifyMe service worker — makes the app work fully offline.
-   Bump VERSION whenever index.html or the icons change, so phones pick up the new build. */
-const VERSION = 'swasthifyme-v1';
+   Bump VERSION whenever index.html, foods.js or the icons change, so phones pick up the new build. */
+const VERSION = 'swasthifyme-v2';
 const FONT_CSS = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hind:wght@400;500;600;700&display=swap';
 const APP_SHELL = [
   './',
   './index.html',
+  './foods.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
