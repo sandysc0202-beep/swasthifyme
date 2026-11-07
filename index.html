@@ -6,6 +6,14 @@
 <title>SwasthifyMe</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#0b8a5c">
+<meta name="description" content="Indian diet, macro, water and weight tracker with Marathi food names. Works offline.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SwasthifyMe">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hind:wght@400;500;600;700&display=swap">
@@ -73,6 +81,7 @@ p{margin:0}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:60px;color:var(--muted);font-size:11.5px;font-weight:600}
 .tab[aria-current="page"]{color:var(--accent)}
 .side-foot{display:none}
+.install-side{display:none}
 .main{min-width:0;padding-block:16px 100px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 
@@ -86,6 +95,8 @@ p{margin:0}
   .tab:hover{background:var(--surface-2);color:var(--ink)}
   .tab[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
   .side-foot{display:block;margin-top:auto;font-size:12px;color:var(--muted)}
+  .install-side:not([hidden]){display:inline-flex;margin-top:auto}
+  .install-side:not([hidden]) + .side-foot{margin-top:0}
   .main{padding-block:28px 40px}
 }
 
@@ -283,6 +294,7 @@ textarea.input{height:96px;padding:10px 12px;font-family:ui-monospace,Menlo,mono
       <button id="nextDay" aria-label="Next day"></button>
     </div>
     <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+    <button class="btn sm primary install-side" data-act="install" hidden>Install app</button>
     <p class="side-foot">Your data stays in this browser. Back it up from Profile.</p>
   </header>
 
@@ -373,6 +385,11 @@ textarea.input{height:96px;padding:10px 12px;font-family:ui-monospace,Menlo,mono
                   <textarea class="input" id="restoreText" placeholder='{"profile":{…},"logs":{…}}'></textarea>
                 </div>
                 <button class="btn sm" style="margin-top:8px" data-act="restore-paste">Restore pasted backup</button>
+              </div>
+              <div class="card" id="installCard">
+                <div class="card-h"><h2>Install on this device</h2></div>
+                <p class="muted" style="font-size:13.5px;margin-bottom:12px" id="installText">Add SwasthifyMe to your home screen or desktop. It opens in its own window and works without internet.</p>
+                <button class="btn sm primary" data-act="install" hidden>Install app</button>
               </div>
               <div class="card">
                 <div class="card-h"><h2>Clean up</h2></div>
@@ -1371,6 +1388,42 @@ $('#todayBtn').addEventListener('click', () => setDate(localDate()));
 window.addEventListener('hashchange', () => setView(location.hash.slice(1), false));
 // Re-check "today" when the app comes back to the foreground after midnight
 document.addEventListener('visibilitychange', () => { if (!document.hidden) renderDateNav(); });
+
+/* =========================================================
+   INSTALL (PWA) + OFFLINE
+   ========================================================= */
+let installEvent = null;
+const installButtons = () => document.querySelectorAll('[data-act="install"]');
+function setInstallText(){
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const el = $('#installText'); if (!el) return;
+  if (standalone) el.textContent = 'SwasthifyMe is installed and running as an app. It works without internet.';
+  else if (installEvent) el.textContent = 'Add SwasthifyMe to your home screen or desktop. It opens in its own window and works without internet.';
+  else if (ios) el.textContent = 'On iPhone or iPad: tap the Share button in Safari, then “Add to Home Screen”.';
+  else el.textContent = 'In Chrome or Edge, use the install icon in the address bar, or the browser menu → “Install SwasthifyMe”. On Android, use the menu → “Add to Home screen”.';
+}
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); installEvent = e;
+  installButtons().forEach(b => b.hidden = false); setInstallText();
+});
+window.addEventListener('appinstalled', () => {
+  installEvent = null; installButtons().forEach(b => b.hidden = true); setInstallText(); toast('SwasthifyMe installed');
+});
+document.addEventListener('click', async ev => {
+  if (!ev.target.closest('[data-act="install"]') || !installEvent) return;
+  installEvent.prompt();
+  try { await installEvent.userChoice; } catch (e) {}
+  installEvent = null; installButtons().forEach(b => b.hidden = true); setInstallText();
+});
+if ('serviceWorker' in navigator && location.protocol !== 'file:'){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Offline mode unavailable:', err));
+  });
+  // Ask the browser not to clear saved logs when storage runs low
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+}
+setInstallText();
 
 /* =========================================================
    BOOT
